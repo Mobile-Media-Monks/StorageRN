@@ -1,6 +1,9 @@
+import {useCallback, useReducer} from 'react';
+
 export async function benchmark(
   label: string,
   fn: () => unknown | Promise<unknown>,
+  callback: (text: string) => void,
 ): Promise<number> {
   const iterations = 1000;
   try {
@@ -15,6 +18,7 @@ export async function benchmark(
     const end = performance.now();
     const diff = end - start;
     console.log(`Finished Benchmark "${label}"! Took ${diff.toFixed(4)}ms!`);
+    callback(`${label}: ${diff.toFixed(4)}ms!`);
     return diff;
   } catch (e) {
     console.error(`Failed Benchmark "${label}"!`, e);
@@ -25,3 +29,15 @@ export async function benchmark(
 export async function waitForGC(): Promise<void> {
   return new Promise(r => setTimeout(r, 500));
 }
+
+export const useState = <T>(initialState = {} as T) => {
+  const reducer = useCallback(
+    (state: T, payload: {[key in keyof T]?: T[key]}) => ({
+      ...state,
+      ...payload,
+    }),
+    [],
+  );
+
+  return useReducer(reducer, initialState);
+};
